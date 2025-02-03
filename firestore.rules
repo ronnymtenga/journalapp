@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // This rule allows anyone (even if not authenticated) to read and write all documents.
+    // Use only in a development environment!
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
