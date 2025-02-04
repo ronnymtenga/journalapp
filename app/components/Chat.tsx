@@ -36,7 +36,7 @@ const Chat = () => {
   const [apiType, setApiType] = useState<'huggingface' | 'deepseek' | 'openai'>('huggingface'); // Option to switch APIs
   const [loading, setLoading] = useState(false); // Loading state
 
-  // Run this effect only on the client-side to avoid `window is not defined` error
+  // running this effect only on the client-side to avoid `window is not defined` error
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       connectFirestoreEmulator(firestore, 'localhost', 8081); // Connect to Firestore emulator if on localhost
