@@ -12,7 +12,7 @@ interface ChatInputProps {
 const ChatInput = ({ input, setInput, handleSendMessage, apiType, setApiType, isSidebarOpen }: ChatInputProps) => {
   return (
     <div className="w-full overflow-x-hidden">
-      <div className={`w-[clamp(300px,90vw,900px)]
+      <div className={`w-[clamp(300px,95vw,900px)]
                        mx-auto 
                        pl-[clamp(4px,5vw,64px)] pr-[clamp(4px,5vw,64px)] flex flex-col items-center`}>
         <div className="bg-zinc-800/50 rounded-3xl shadow-lg ring-1 ring-white/5 w-full">

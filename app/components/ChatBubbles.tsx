@@ -16,10 +16,10 @@ type Message = {
     return (
       <div className="flex-1 min-h-0 w-full">
         <div className="h-full overflow-y-auto scrollbar-thin transition-colors duration-300">
-          <div className="w-[clamp(270px,80vw,700px)]
+          <div className="w-[clamp(270px,85vw,700px)]
                           mx-auto 
                           pr-[clamp(4px,5vw,56px)]  pl-[clamp(4px,5vw,64px)] flex flex-col items-center">
-            <div className="flex flex-col space-y-4 py-16 w-full">
+            <div className="flex flex-col space-y-4 py-4 w-full">
               {messages.map((msg, index) => (
                 <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`rounded-md p-[clamp(0.5rem,1.5vw,1rem)] text-base 

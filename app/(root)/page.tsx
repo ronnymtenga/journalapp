@@ -70,6 +70,8 @@ const Home = () => {
       });
 
       const data = await response.json();
+
+      setInput(''); // Clear input after sending
       
       // Store bot response
       await addDoc(collection(firestore, 'chat'), {
@@ -79,7 +81,6 @@ const Home = () => {
         senderorder: 2,
       });
       
-      setInput(''); // Clear input after sending
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
