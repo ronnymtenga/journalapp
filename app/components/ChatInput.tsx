@@ -12,8 +12,9 @@ interface ChatInputProps {
 const ChatInput = ({ input, setInput, handleSendMessage, apiType, setApiType, isSidebarOpen }: ChatInputProps) => {
   return (
     <div className="w-full overflow-x-hidden">
-      <div className={`w-[clamp(300px,min(90vw,900px),900px)] mx-auto 
-              pr-[clamp(4px,6vw,64px)] flex flex-col items-center transition-all duration-300`}>
+      <div className={`w-[clamp(300px,90vw,900px)]
+                       mx-auto 
+                       pl-[clamp(4px,5vw,64px)] pr-[clamp(4px,5vw,64px)] flex flex-col items-center`}>
         <div className="bg-zinc-800/50 rounded-3xl shadow-lg ring-1 ring-white/5 w-full">
           <div className="px-3 py-2">
             <TextareaAutosize
@@ -44,7 +45,7 @@ const ChatInput = ({ input, setInput, handleSendMessage, apiType, setApiType, is
               </select>
               <button
                 onClick={handleSendMessage}
-                className="p-2 rounded-full bg-zinc-700 hover:bg-zinc-500 text-zinc-100
+                className="p-3 rounded-full -mt-3 bg-zinc-700 hover:bg-zinc-500 text-zinc-100
                          transition-colors ring-1 ring-white/10"
               >
                 <svg 
