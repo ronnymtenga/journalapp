@@ -1,76 +1,84 @@
 "use client";
 
-
-import { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app'; // Initialize Firebase
-import { getFirestore, connectFirestoreEmulator, collection, addDoc } from 'firebase/firestore'; // Firestore services
-import { writeBatch, doc } from 'firebase/firestore';
-
-
-// Initialize Firebase with your config
-const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  };
-
-// Initialize Firebase app
-const app = initializeApp(firebaseConfig);
-
-// Initialize Firestore
-const firestore = getFirestore(app);
+import TextareaAutosize from 'react-textarea-autosize';
+import { useState, useEffect, useRef } from 'react';
+import { firestore } from '../firebase'; // Adjust the path as needed
+import { writeBatch, doc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore'; // Firestore services
+import ChatInput from './ChatInput';
 
 type Message = {
-  id: string;
-  text: string;
+  timestamp: any;
   sender: 'user' | 'bot';
+  text: string;
+  id: string,
 };
 
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chat, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [apiType, setApiType] = useState<'huggingface' | 'deepseek' | 'openai'>('huggingface'); // Option to switch APIs
   const [loading, setLoading] = useState(false); // Loading state
 
-  // running this effect only on the client-side to avoid `window is not defined` error
+  // Add ref for the message container
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Use useEffect to scroll when chat updates
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      connectFirestoreEmulator(firestore, 'localhost', 8081); // Connect to Firestore emulator if on localhost
-    }
-  }, []); // Empty dependency array ensures this effect only runs once on component mount (client-side)
+    scrollToBottom();
+  }, [chat]); // Scroll whenever chat messages change
+
+  useEffect(() => {
+    // Effect #1: Firestore real-time listener for chat
+    const q = query(collection(firestore, 'chat'), orderBy('timestamp', 'asc'), orderBy('senderorder', 'asc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const fetchedMessages = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }as Message));
+    setMessages(fetchedMessages);
+    });
+  
+    return () => unsubscribe(); // Cleanup function to unsubscribe from the snapshot listener when the component unmounts
+  }, []); // Only runs once on mount 
 
   const handleSendMessage = async () => {
     if (input.trim()) {
       const userMessage: Message = {
-        id: new Date().toISOString(),
+        timestamp: serverTimestamp(),
         text: input,
         sender: 'user',
+        id: new Date().toISOString(),
       };
+      // Update UI with the user message
       setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+      setInput(''); // Clear the input field after sending a message
 
       // Create a batch instance
       const batch = writeBatch(firestore);
 
       // Prepare a new document reference for the user message
-      const userDocRef = doc(collection(firestore, 'messages'));
+      const userDocRef = doc(collection(firestore, 'chat'));
       // Add the user message to the batch
       batch.set(userDocRef, {
-        text: input,
+        timestamp: serverTimestamp(),
         sender: 'user',
-        timestamp: new Date(),
+        text: input,
+        senderorder: 0
      });
 
-      // Set loading to true when awaiting bot response
+      // Set loading UI to true when awaiting bot response
       setLoading(true);
       
 
       try {
         // Send user message to the backend API
-        const response = await fetch('/api/chat', { 
+        const response = await fetch('/api/inference', { 
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -85,93 +93,99 @@ const Chat = () => {
         console.log("Reached here");
 
         const botMessage: Message = {
-          id: new Date().toISOString(),
-          text: data.message,
+          timestamp: serverTimestamp(),
           sender: 'bot',
+          text: data.message,
+          id: new Date().toISOString()
         };
 
         // Prepare a new document reference for the bot message
-        const botDocRef = doc(collection(firestore, 'messages'));
+        const botDocRef = doc(collection(firestore, 'chat'));
         // Add the bot message to the batch
         batch.set(botDocRef, {
-          text: data.message,
+          timestamp: serverTimestamp(),
           sender: 'bot',
-          timestamp: new Date(),
+          text: data.message,
+          senderorder: 1
         });
 
         // Commit the batch to Firestore
         await batch.commit();
           
         console.log("And got upto here");
-
+        // Update UI with the bot message
         setMessages((prevMessages) => [...prevMessages, botMessage]);
       } catch (error) {
         console.error('Error:', error);
         const errorMessage: Message = {
-          id: new Date().toISOString(),
-          text: 'Sorry, there was an error with the bot.',
+          timestamp: serverTimestamp(),
           sender: 'bot',
+          text: 'Sorry, there was an error with the bot.',
+          id: new Date().toISOString()
         };
+        // Update UI with the error message
         setMessages((prevMessages) => [...prevMessages, errorMessage]);
       } finally {
         setLoading(false);
       }
 
-      setInput('');
+      //setInput(''); // Clear the input field after sending a message
     }
   };
 
   return (
-    <div className="bg-dark-gray rounded-lg shadow-lg p-6">
+    <div className="h-full flex flex-col">
       {/* API Selector */}
-      <div className="mb-4">
-        <select
-          value={apiType}
-          onChange={(e) => setApiType(e.target.value as 'huggingface' | 'deepseek' | 'openai')}
-          className="bg-gray-800 text-white p-2 rounded-lg"
-        >
-          <option value="huggingface">Hugging Face</option>
-          <option value="openai">OpenAI</option>
-          <option value="deepseek">DeepSeek</option>
-        </select>
+      <div className="border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <select
+            value={apiType}
+            onChange={(e) => setApiType(e.target.value as 'huggingface' | 'deepseek' | 'openai')}
+            className="bg-zinc-800 text-white text-sm py-1 px-2 rounded-lg"
+          >
+            <option value="huggingface">Hugging Face</option>
+            <option value="openai">OpenAI</option>
+            <option value="deepseek">DeepSeek</option>
+          </select>
+        </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex flex-col space-y-4 h-96 overflow-y-auto">
-        {messages.map((msg, index) => (
-          <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div
-              className={`max-w-xs rounded-lg p-4 text-white ${msg.sender === 'user' ? 'bg-blue-600' : 'bg-gray-700'}`}
-            >
-              {msg.text}
+      {/* Chat Messages - Now with natural bottom */}
+      <div className="flex-1 min-h-0 w-full">
+        <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-transparent 
+                       hover:scrollbar-thumb-zinc-700 active:scrollbar-thumb-zinc-700
+                       scrollbar-track-transparent transition-colors duration-300">
+          <div className="px-4">
+            <div className="flex flex-col space-y-2 py-4">
+              {chat.map((msg, index) => (
+                <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-xs rounded-lg p-3 text-white ${
+                    msg.sender === 'user' 
+                      ? 'bg-gray-700' // Lighter shade for user messages
+                      : 'bg-transparent border border-gray-700' // Transparent with border for bot messages
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="flex justify-center p-4 text-gray-500">
+                  <span>Bot is typing...</span>
+                </div>
+              )}
+              {/* Add invisible div as scroll anchor */}
+              <div ref={messagesEndRef} />
             </div>
           </div>
-        ))}
-
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex justify-center p-4 text-gray-500">
-            <span>Bot is typing...</span>
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Input Box */}
-      <div className="mt-4 flex">
-        <input
-          type="text"
-          className="flex-grow bg-gray-800 text-white p-2 rounded-lg focus:outline-none"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button
-          onClick={handleSendMessage}
-          className="ml-2 bg-blue-600 text-white p-2 rounded-lg"
-        >
-          Send
-        </button>
-      </div>
+      {/* Input - Now without margin wrapper */}
+      <ChatInput 
+        input={input}
+        setInput={setInput}
+        handleSendMessage={handleSendMessage}
+      />
     </div>
   );
 };

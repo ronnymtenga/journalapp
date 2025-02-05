@@ -12,8 +12,8 @@ const Home = () => {
       </header>
 
       {/* Main Content - Chat Section */}
-      <main className="flex-grow flex justify-center items-center px-4 py-8">
-        <div className="w-full max-w-2xl">
+      <main className="flex-grow flex justify-center items-center px-4 py-2">
+        <div className="w-full max-w-2xl h-[85vh]">
           <Chat />
         </div>
       </main>
