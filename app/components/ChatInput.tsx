@@ -4,20 +4,24 @@ interface ChatInputProps {
   input: string;
   setInput: (input: string) => void;
   handleSendMessage: () => void;
+  apiType: string;
+  setApiType: (type: 'huggingface' | 'deepseek' | 'openai') => void;
+  isSidebarOpen: boolean;
 }
 
-const ChatInput = ({ input, setInput, handleSendMessage }: ChatInputProps) => {
+const ChatInput = ({ input, setInput, handleSendMessage, apiType, setApiType, isSidebarOpen }: ChatInputProps) => {
   return (
-    <div className="bg-zinc-900">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-zinc-800/50 rounded-lg shadow-lg ring-1 ring-white/5">
+    <div className="w-full overflow-x-hidden">
+      <div className={`w-[clamp(300px,min(90vw,900px),900px)] mx-auto 
+              pr-[clamp(4px,6vw,64px)] flex flex-col items-center transition-all duration-300`}>
+        <div className="bg-zinc-800/50 rounded-3xl shadow-lg ring-1 ring-white/5 w-full">
           <div className="px-3 py-2">
             <TextareaAutosize
               minRows={1}
               maxRows={5}
-              className="w-full bg-zinc-800 text-zinc-100 p-1.5 rounded-lg focus:outline-none resize-none 
-                         border border-zinc-700 placeholder-zinc-500 
-                         focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-colors"
+              className="w-full bg-transparent text-zinc-100 p-1.5 rounded-lg outline-none resize-none 
+                         placeholder-zinc-500 
+                         transition-colors"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a message..."
@@ -28,13 +32,29 @@ const ChatInput = ({ input, setInput, handleSendMessage }: ChatInputProps) => {
                 }
               }}
             />
-            <div className="mt-1.5 flex justify-end">
+            <div className="mt-4 flex justify-between items-center">
+              <select
+                value={apiType}
+                onChange={(e) => setApiType(e.target.value as 'huggingface' | 'deepseek' | 'openai')}
+                className="bg-zinc-800 text-white text-sm py-0.5 px-2 rounded-lg"
+              >
+                <option value="huggingface">Hugging Face</option>
+                <option value="openai">OpenAI</option>
+                <option value="deepseek">DeepSeek</option>
+              </select>
               <button
                 onClick={handleSendMessage}
-                className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-3 py-1 rounded-md 
+                className="p-2 rounded-full bg-zinc-700 hover:bg-zinc-500 text-zinc-100
                          transition-colors ring-1 ring-white/10"
               >
-                Send
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  className="w-5 h-5"
+                >
+                  <path d="M12 4.5L4.5 12l1.5 1.5L11 8v11h2V8l5 5.5 1.5-1.5L12 4.5z" />
+                </svg>
               </button>
             </div>
           </div>

@@ -5,7 +5,8 @@ export async function POST(request: Request) {
   console.log("inside the API, POST successful");
   try {
     // Parse the incoming JSON from the request body
-    const { userMessage, apiType } = await request.json();
+    const { messages, apiType } = await request.json();
+    const userMessage = messages[0].content;
 
     if (!userMessage) {
       return NextResponse.json({ message: 'Message is required' }, { status: 400 });
