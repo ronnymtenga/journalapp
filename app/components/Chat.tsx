@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import ChatMessages from './ChatBubbles';
 
 type Message = {
-  timestamp: any;
+  timestamp: string;
   sender: 'user' | 'bot';
   text: string;
   id: string,

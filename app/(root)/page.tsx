@@ -6,7 +6,7 @@ import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 
 import { firestore } from '../firebase';
 
 type Message = {
-  timestamp: any;
+  timestamp: string;
   sender: 'user' | 'bot';
   text: string;
   id: string;
@@ -89,18 +89,23 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white flex">
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className={`fixed top-2 ${isSidebarOpen ? 'left-[248px]' : 'left-2'} z-50 bg-zinc-800 p-2 
-                   rounded-lg transition-all duration-300 hover:bg-zinc-700`}
-      >
-        ☰
-      </button>
-
+    <div className="min-h-screen bg-zinc-900 text-gray flex flex-col">
+      
       {/* Header */}
-      <div className="h-12 bg-zinc-900/80 backdrop-blur-sm sticky top-0 z-30" />
+      <header className="h-12 bg-zinc-900 sticky top-0 z-40">
+        {/*<div className="flex items-center justify-center h-full">
+          <h1 className="text-2xl font-bold">aiJournal</h1>
+        </div>*/}
+        {/* Toggle Button */
+         !isSidebarOpen && (
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="fixed top-2 left-2 z-50 bg-zinc-900 p-2 rounded-lg hover:bg-zinc-800 transition-all duration-300"
+          >
+            ☰
+          </button>
+        )}
+      </header>
 
       {/* Overlay */}
       <div 
@@ -113,16 +118,21 @@ const Home = () => {
       <div className={`fixed top-0 left-0 h-full w-64 bg-zinc-800 shadow-sm transition-transform duration-300 z-40
                       ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        <div className="p-4">
-          <h1 className="text-2xl font-bold">aiJournal</h1>
-        </div>
+        {isSidebarOpen && (
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed top-2 left-2 z-50 bg-transparent rounded-lg p-2 hover:bg-zinc-700 transition-all duration-300"
+          >
+            ☰
+          </button>
+        )}
       </div>
 
       {/* Main Content with Header */}
-      <div className="flex-1 flex flex-col min-w-0">
+      
         {/* Chat Messages Area */}
-        <main className="flex-grow flex justify-center items-center">
-          <div className="w-full h-[calc(100vh-132px)]"> {/* Adjusted height to account for top padding */}
+        <main className="flex-1 flex justify-center items-center">
+          <div className="w-full h-[calc(100vh-160px)]"> 
             <Chat 
               input={input}
               handleSendMessage={handleSendMessage}
@@ -133,10 +143,9 @@ const Home = () => {
           </div>
         </main>
 
-        {/* Footer Section with Chat Input */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm">
-          <div className="py-0">
-            <ChatInput 
+        
+        <div className="bg-zinc-900/80 sticky bottom-6 backdrop-blur-sm py-0">
+          <ChatInput 
               input={input}
               setInput={setInput}
               handleSendMessage={handleSendMessage}
@@ -144,13 +153,15 @@ const Home = () => {
               setApiType={setApiType}
               isSidebarOpen={isSidebarOpen}
             />
-          </div>
-          <footer className="py-1 text-center text-zinc-500 text-sm">
-            <p className="leading-none">© 2025 Your Chat App. All rights reserved.</p>
-          </footer>
         </div>
+
+        {/* Footer Section*/}
+        <footer className="py-1 bg-zinc-900/80 text-white flex items-center justify-center fixed bottom-0 w-full z-20">
+          <p className="leading-none text-sm">© 2025 Your Chat App. All rights reserved.</p>
+        </footer>
+
       </div>
-    </div>
+
   );
 };
 

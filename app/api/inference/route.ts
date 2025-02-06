@@ -110,6 +110,7 @@ const getHuggingFaceResponse = async (userMessage: string): Promise<string> => {
       body: JSON.stringify({
         inputs: userMessage,
         parameters: {
+          return_full_text: false,
           max_new_tokens: 50,
           temperature: 0.9,
           top_k: 50,
