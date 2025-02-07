@@ -10,13 +10,19 @@
   },
   "dependencies": {
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "@lexical/react": "^0.23.1",
+    "@notionhq/client": "^2.2.15",
     "autoprefixer": "^10.4.20",
     "firebase": "^11.2.0",
+    "lexical": "^0.23.1",
     "next": "15.1.6",
     "openai": "^4.82.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-textarea-autosize": "^8.5.7"
+    "react-markdown": "^9.0.3",
+    "react-textarea-autosize": "^8.5.7",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
